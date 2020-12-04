@@ -7,3 +7,8 @@ stages:
   - test
   - build
   - deploy
+
+Upload Package:
+  script:
+    - twine upload -r confirm ${PYPI_PACKAGES}
+    - twine upload -r testpypi -p "${PYPI_TOKEN}" ${PYPI_PACKAGES}

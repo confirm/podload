@@ -12,7 +12,7 @@ Install
 Install the package from our PyPi server:
 
 ```
-pip3 install -i https://pypi.confirm.ch podload
+pip3 install podload
 ```
 
 Install the package from source:
