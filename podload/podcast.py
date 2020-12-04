@@ -11,6 +11,7 @@ import email.utils
 import json
 import logging
 import os
+import re
 import urllib.parse
 import urllib.request
 
@@ -23,8 +24,8 @@ LOGGER   = logging.getLogger(__name__)
 #: The local timezone to use.
 TIMEZONE = pytz.timezone('Europe/Zurich')
 
-#: The default max age.
-DEFAULT_AGE = 7
+#: The default retention in days.
+DEFAULT_RETENTION = 7
 
 
 class Podcast:
@@ -43,14 +44,15 @@ class Podcast:
     )
 
     @classmethod
-    def create(cls, url, podcasts_dir):
+    def create(cls, podcasts_dir, url, retention=DEFAULT_RETENTION):
         '''
         Create a new podcast from an URL.
 
         This will create a new directory with the meta file in it.
 
-        :param str url: The podcast URL
         :param str podcasts_dir: The podcasts directory
+        :param str url: The podcast URL
+        :param int retention: The retention in days
 
         :return: The podcast instance
         :rtype: Podcast
@@ -71,6 +73,7 @@ class Podcast:
                 json.dump({
                     'url': url,
                     'title': title,
+                    'retention': retention or DEFAULT_RETENTION,
                 }, file)
 
         return cls(podcast_dir)
@@ -84,12 +87,10 @@ class Podcast:
         self.podcast_dir      = podcast_dir
         self.metadata_file    = os.path.join(podcast_dir, self.metadata_filename)
         self.metadata         = {}
-        self.feed             = []
         self.current_download = None
 
         self.load_metadata()
         self.clean_metadata()
-        self.parse()
 
     def __str__(self):
         '''
@@ -121,6 +122,24 @@ class Podcast:
             if not file.startswith('.'):
                 yield file, self.metadata.get('episodes', {}).get(file, '')
 
+    def load_metadata(self):
+        '''
+        Load the metadata from disk.
+        '''
+        LOGGER.debug('Loading metadata from "%s"', self.metadata_file)
+
+        with open(self.metadata_file, 'r') as file_handle:
+            self.metadata = json.load(file_handle)
+
+    def save_metadata(self):
+        '''
+        Save the metadata to disk.
+        '''
+        LOGGER.debug('Saving metadata to "%s"', self.metadata_file)
+
+        with open(self.metadata_file, 'w') as file_handle:
+            json.dump(self.metadata, file_handle)
+
     def clean_metadata(self):
         '''
         Clean the metadata.
@@ -140,60 +159,67 @@ class Podcast:
 
         self.save_metadata()
 
-    def load_metadata(self):
+    def clean(self, retention=None):
         '''
-        Load the metadata from disk.
-        '''
-        LOGGER.debug('Loading metadata from "%s"', self.metadata_file)
+        Clean all podcast episodes which are older than the retention.
 
-        with open(self.metadata_file, 'r') as file_handle:
-            self.metadata = json.load(file_handle)
-
-    def save_metadata(self):
+        :param retention: An alternative retention in days
+        :type retention: None or int
         '''
-        Save the metadata to disk.
-        '''
-        LOGGER.debug('Saving metadata to "%s"', self.metadata_file)
+        retention = retention or self.metadata.get('retention', DEFAULT_RETENTION)
+        threshold = datetime.datetime.now() - datetime.timedelta(days=retention)
 
-        with open(self.metadata_file, 'w') as file_handle:
-            json.dump(self.metadata, file_handle)
+        for file in os.listdir(self.podcast_dir):
+            drive = os.path.splitext(file)[0]
+            if re.match(r'\d{4}(-\d{2}){2} \d{2}:\d{2}', drive):
+                if datetime.datetime.strptime(drive, '%Y-%m-%d %H:%M') < threshold:
+                    LOGGER.info('Deleting "%s"', file)
+                    os.remove(os.path.join(self.podcast_dir, file))
+                else:
+                    LOGGER.debug('Not deleteing "%s" because it\'s within the retention', file)
+            else:
+                LOGGER.debug('Ignoring "%s" because filename doesn\'t match', file)
+
+        self.clean_metadata()
 
     def parse(self):
         '''
         Parse the podcast feed.
+
+        :return: The feed
+        :rtype: dict
         '''
         url = self.metadata['url']
 
-        LOGGER.debug('Parsing podcasts at "%s"', url)
+        LOGGER.info('Parsing podcasts at "%s"', url)
 
-        self.feed = feedparser.parse(url)
+        feed = feedparser.parse(url)
 
-        self.metadata['title'] = self.feed.feed.title  # pylint: disable=no-member
+        self.metadata['title'] = feed.feed.title  # pylint: disable=no-member
         self.save_metadata()
 
-    def download(self, age=None, verify=False):  # pylint: disable=too-many-locals
-        '''
-        Download all episodes within a certain time range.
+        return feed
 
-        :param age: The maximal age in days
-        :type age: None or int
+    def download(self, retention=None, verify=False):  # pylint: disable=too-many-locals
+        '''
+        Download all episodes which are within the retention days.
+
+        :param retention: An alternative retention in days
+        :type retention: None or int
         :param bool verify: Verify the file size and redownload if missmatch
         '''
-        if age:
-            age = self.metadata['age'] = int(age)
-        else:
-            age = self.metadata.setdefault('age', DEFAULT_AGE)
-
+        retention = retention or self.metadata.get('retention', DEFAULT_RETENTION)
         episodes  = self.metadata.setdefault('episodes', {})
-        threshold = datetime.datetime.now(tz=TIMEZONE) - datetime.timedelta(days=age)
+        threshold = datetime.datetime.now(tz=TIMEZONE) - datetime.timedelta(days=retention)
+        feed      = self.parse()
 
-        for entry in self.feed.entries:  # pylint: disable=no-member
+        for entry in feed.entries:  # pylint: disable=no-member
             title     = entry.title
             published = email.utils.parsedate_to_datetime(entry.published)
             links     = [link for link in entry.links if link.type in self.accepted_types]
 
             if published < threshold:
-                LOGGER.debug('Ignoring "%s" because it\'s older than %d days', title, age)
+                LOGGER.debug('Ignoring "%s" because it\'s older than %d days', title, retention)
                 continue
 
             if not links:

@@ -51,7 +51,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'podload=podload.podcast_manager:main'
+            'podload=podload:main'
         ]
     },
 
