@@ -2,13 +2,3 @@
 include:
     - project: confirm/gitlab-ci
       file: python-package/.gitlab-ci.yml
-
-stages:
-  - test
-  - build
-  - deploy
-
-Upload Package:
-  script:
-    - twine upload -r confirm ${PYPI_PACKAGES}
-    - twine upload -r pypi -p "${PYPI_TOKEN}" ${PYPI_PACKAGES}
