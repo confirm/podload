@@ -1,0 +1,9 @@
+*.egg-info/
+.coverage
+.coveragerc
+.eggs/
+.isort.cfg
+.pylintrc
+.venv/
+__pycache__/
+tox.ini
