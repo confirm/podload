@@ -11,8 +11,8 @@ import email.utils
 import json
 import logging
 import os
-import urllib.request
 import urllib.parse
+import urllib.request
 
 import feedparser
 import pytz

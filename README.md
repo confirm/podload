@@ -24,17 +24,38 @@ Usage
 The usage of ``podload`` is quite simple:
 
 ```
-usage: podload [-h] [-a AGE] [-d] [-v] directory [url]
+usage: podload [-h] [-d] directory {info,add,download} ...
 
 The simple podcast loader.
 
 positional arguments:
-  directory          the name of the podcasts directory
-  url                a podcast URL to add
+  directory            the name of the podcasts directory
+  {info,add,download}
+    info               display the podcast infos
+    add                add a new podcast
+    download           download the latest episodes
 
 optional arguments:
-  -h, --help         show this help message and exit
-  -a AGE, --age AGE  the max age
-  -d, --debug        enable debug mode
-  -v, --verify       verify the file size as well
+  -h, --help           show this help message and exit
+  -d, --debug          enable debug mode
 ```
+
+For example, to add the "TED Talks Daily" Podcast to `/Volumes/XTRAINERZ` you can run this:
+
+```
+podload /Volumes/XTRAINERZ add http://feeds.feedburner.com/TEDTalks_audio 
+```
+
+From now on you can download the latest episodes by executing:
+
+```
+podload /Volumes/XTRAINERZ download
+```
+
+If you want more episodes than just the last 7 days, you can specify the `-a` argument:
+
+```
+podload /Volumes/XTRAINERZ download -a 20
+```
+
+Podload will remember it and will automatically use the same age in the future, as long as you don't specify `-a`.
