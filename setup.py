@@ -19,7 +19,7 @@ setup(
 
     name='podload',
 
-    description='The podcast loader.',
+    description='A rather simple podcast download tool.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
 
