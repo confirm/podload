@@ -18,7 +18,7 @@ pip3 install podload
 Install the package from source:
 
 ```
-pip3 install confirm-utils@git+https://git.confirm.ch/confirm/podload.git
+pip3 install podload@git+https://git.confirm.ch/confirm/podload.git
 ```
 
 Usage

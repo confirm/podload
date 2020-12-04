@@ -11,4 +11,4 @@ stages:
 Upload Package:
   script:
     - twine upload -r confirm ${PYPI_PACKAGES}
-    - twine upload -r testpypi -p "${PYPI_TOKEN}" ${PYPI_PACKAGES}
+    - twine upload -r pypi -p "${PYPI_TOKEN}" ${PYPI_PACKAGES}
