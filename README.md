@@ -1,7 +1,10 @@
 Purpose
 =======
 
-This project contains **podload**, a simple Python utility to download podcasts.
+This project contains **podload**, a rather simple Python tool to manage a bunch of podcasts.
+
+It supports a simple retention policy, which can be used to download the latest episodes and 
+automatically clean the ones which are no longer in the retention time range.
 
 Install
 =======
