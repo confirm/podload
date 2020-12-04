@@ -82,7 +82,7 @@ def main():
 
     download = subparsers.add_parser(name='download', help='download the latest episodes')
     download.add_argument('-a', '--age', help='the max age')
-    download.add_argument('-v', '--verify', action='store_true', help='verify the file size as well')
+    download.add_argument('-v', '--verify', action='store_true', help='verify the file size')
 
     args = parser.parse_args()
 
