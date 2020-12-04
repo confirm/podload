@@ -1,0 +1,7 @@
+coverage
+isort
+pycodestyle
+pylint
+setuptools
+setuptools_scm
+wheel
