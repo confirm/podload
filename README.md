@@ -1,15 +1,21 @@
-Purpose
-=======
+Introduction
+============
 
-This project contains **podload**, a rather simple Python tool to manage a bunch of podcasts.
+**Podload** is a radically simple Python tool to manage podcasts with no fuzz.
+It includes the following features:
 
-It supports a simple retention policy, which can be used to download the latest episodes and 
-automatically clean the ones which are no longer in the retention time range.
+- **Add** new podcasts via their URL
+- Automatically **download** the latest episodes 
+- Automatically **clean** up old episodes
+- Defining the **retention** time for each podcast
+- Putting podcasts into **subdirectories**, even nested ones
 
-Install
-=======
+I'm using this tool to always have the latest podcasts on my [Aftershokz Xtrainers](https://aftershokz.com/products/xtrainerz).
 
-Install the package from our PyPi server:
+Installation
+============
+
+Install the package via PyPi:
 
 ```
 pip3 install podload
