@@ -64,6 +64,17 @@ class Manager:
         for podcast in self.podcasts:
             getattr(podcast, method)(**kwargs)
 
+    def set_retention(self, podcast, retention):
+        '''
+        Set a new retention on a podcast.
+
+        :param str podcast: The podcast title
+        :param int retention: The retention in days
+        '''
+        for podcast_obj in self.podcasts:
+            if podcast_obj.metadata['title'] == podcast:
+                podcast_obj.set_retention(retention)
+
     def clean(self, **kwargs):
         '''
         Download all episodes.

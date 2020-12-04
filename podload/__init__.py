@@ -30,20 +30,30 @@ def main():
         formatter_class=help_formatter
     )
 
+    retention_args = '-r', '--retention'
+    retention_kwargs = {'type': int, 'help': 'an alternative retention in days'}
+
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug mode')
-    parser.add_argument('-r', '--retention', type=int, help='an alternative retention in days')
     parser.add_argument('directory', help='the name of the podcasts directory')
 
     subparsers = parser.add_subparsers(dest='action', required=True)
 
     subparsers.add_parser(name='info', help='display the podcast infos')
-    subparsers.add_parser(name='clean', help='clean old episodes')
+
+    clean = subparsers.add_parser(name='clean', help='clean old episodes')
+    clean.add_argument(*retention_args, **retention_kwargs)
 
     add = subparsers.add_parser(name='add', help='add a new podcast')
     add.add_argument('url', help='a podcast URL to add')
+    add.add_argument(*retention_args, **retention_kwargs)
 
     download = subparsers.add_parser(name='download', help='download the latest episodes')
+    download.add_argument(*retention_args, **retention_kwargs)
     download.add_argument('-v', '--verify', action='store_true', help='verify the file size')
+
+    retention = subparsers.add_parser(name='set-retention', help='set a new retention')
+    retention.add_argument('podcast', help='the podcast title')
+    retention.add_argument('retention', type=int, help='the new retention in days')
 
     args = parser.parse_args()
 
@@ -68,6 +78,9 @@ def main():
 
     elif args.action == 'download':
         manager.download(retention=args.retention, verify=args.verify)
+
+    elif args.action == 'set-retention':
+        manager.set_retention(podcast=args.podcast, retention=args.retention)
 
 
 if __name__ == '__main__':

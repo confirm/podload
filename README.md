@@ -24,22 +24,22 @@ Usage
 The usage of ``podload`` is quite simple:
 
 ```
-usage: podload [-h] [-d] [-r RETENTION] directory {info,clean,add,download} ...
+usage: podload [-h] [-d] directory {info,clean,add,download,set-retention} ...
 
 The simple podcast loader.
 
 positional arguments:
-  directory                            the name of the podcasts directory
-  {info,clean,add,download}
-    info                               display the podcast infos
-    clean                              clean old episodes
-    add                                add a new podcast
-    download                           download the latest episodes
+  directory                             the name of the podcasts directory
+  {info,clean,add,download,set-retention}
+    info                                display the podcast infos
+    clean                               clean old episodes
+    add                                 add a new podcast
+    download                            download the latest episodes
+    set-retention                       set a new retention
 
 optional arguments:
-  -h, --help                           show this help message and exit
-  -d, --debug                          enable debug mode
-  -r RETENTION, --retention RETENTION  an alternative retention in days
+  -h, --help                            show this help message and exit
+  -d, --debug                           enable debug mode
 ```
 
 For example, to add the "Wired UK" Podcast to `/Volumes/XTRAINERZ` you can run this:
@@ -75,12 +75,14 @@ The WIRED Podcast (14 days retention):
 ```
 
 By default a **retention time of 7 days** is used.
-However, you can either override that when `add`ing the podcast (permanent) or when `download`ing podcasts (temporarily) by using the `-r` argument.
+However, you can set another podcast default when `add`ing the podcast by using the `-r` argument, or by calling `set-retention` afterwards. You can also override the retention temporarily when `clean`ing or `download`ing podcasts by using the `-r` argument.
 
 ```bash
 # Permanent:
-podload /Volumes/XTRAINERZ -r 14 add https://www.wired.co.uk/rss/podcast/wired-podcast
+podload /Volumes/XTRAINERZ add -r 14 https://www.wired.co.uk/rss/podcast/wired-podcast
+podload /Volumes/XTRAINERZ set-retention "The WIRED Podcast" 14
 
 # Temporarily:
-podload /Volumes/XTRAINERZ -r 14 download
+podload /Volumes/XTRAINERZ clean -r 14
+podload /Volumes/XTRAINERZ download -r 14
 ```

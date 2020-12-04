@@ -182,6 +182,16 @@ class Podcast:
 
         self.clean_metadata()
 
+    def set_retention(self, retention):
+        '''
+        Set a new retention.
+
+        :param int retention: The retention in days
+        '''
+        LOGGER.info('Setting retention of "%s" to %d days', self, retention)
+        self.metadata['retention'] = retention
+        self.save_metadata()
+
     def parse(self):
         '''
         Parse the podcast feed.
