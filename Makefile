@@ -2,6 +2,7 @@
 # Settings
 #
 
+BUILD_DIR = build
 SOURCE_DIRS = podload
 LINTER_CONFIGS = https://git.confirm.ch/confirm/development-guidelines/raw/master/configs
 PYPI_INDEX = https://pypi.confirm.ch/
