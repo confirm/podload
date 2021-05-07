@@ -34,7 +34,7 @@ def main():
     retention_kwargs = {'type': int, 'help': 'an alternative retention in days'}
 
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug mode')
-    parser.add_argument('directory', help='the name of the podcasts directory')
+    parser.add_argument('directory', default='.', nargs='?', help='the podcasts directory path')
 
     subparsers = parser.add_subparsers(dest='action', required=True)
 

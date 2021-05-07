@@ -33,7 +33,7 @@ Usage
 The usage of ``podload`` is quite simple:
 
 ```
-usage: podload [-h] [-d] directory {info,clean,add,download,set-retention} ...
+usage: podload [-h] [-d] [directory] {info,clean,add,download,set-retention} ...
 
 The simple podcast loader.
 
