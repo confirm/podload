@@ -218,15 +218,17 @@ class Podcast:
         :type retention: None or int
         :param bool verify: Verify the file size and redownload if missmatch
         '''
-        retention = retention or self.metadata.get('retention', DEFAULT_RETENTION)
-        episodes  = self.metadata.setdefault('episodes', {})
-        threshold = datetime.datetime.now(tz=TIMEZONE) - datetime.timedelta(days=retention)
-        feed      = self.parse()
+        retention       = retention or self.metadata.get('retention', DEFAULT_RETENTION)
+        episodes        = self.metadata.setdefault('episodes', {})
+        threshold_naive = datetime.datetime.now() - datetime.timedelta(days=retention)
+        threshold_aware = datetime.datetime.now(tz=TIMEZONE) - datetime.timedelta(days=retention)
+        feed            = self.parse()
 
         for entry in feed.entries:  # pylint: disable=no-member
             title     = entry.title
             published = email.utils.parsedate_to_datetime(entry.published)
             links     = [link for link in entry.links if link.type in self.accepted_types]
+            threshold = threshold_naive if published.tzinfo is None else threshold_aware
 
             if published < threshold:
                 LOGGER.debug('Ignoring "%s" because it\'s older than %d days', title, retention)
