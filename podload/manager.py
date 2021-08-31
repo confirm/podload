@@ -1,5 +1,5 @@
 '''
-Podcast manager module.
+Podload manager module.
 '''
 
 __all__ = (
@@ -9,6 +9,7 @@ __all__ = (
 import logging
 import os
 
+from .exceptions import PodcastNotFoundError
 from .podcast import Podcast
 
 LOGGER = logging.getLogger(__name__)
@@ -29,6 +30,24 @@ class Manager:
         self.podcasts     = []
 
         self.load_podcasts()
+
+    @property
+    def info(self):
+        '''
+        The informations of all podcasts.
+
+        :return: The informations
+        :rtype: str
+        '''
+        info = []
+
+        for podcast in self.podcasts:
+            info.append(f'\n{podcast} ({podcast.metadata.get("retention")} days retention):')
+
+            for title in podcast.info:
+                info.append(f'    {title}')
+
+        return '\n'.join(info)
 
     def load_podcasts(self):
         '''
@@ -70,10 +89,17 @@ class Manager:
 
         :param str podcast: The podcast title
         :param int retention: The retention in days
+
+        :raises podload.exceptions.PodcastNotFoundError: When podcast wasn't found
         '''
         for podcast_obj in self.podcasts:
             if podcast_obj.metadata['title'] == podcast:
                 podcast_obj.set_retention(retention)
+                return
+
+        error = 'Podcast "%s" not found'
+        LOGGER.error(error, podcast)
+        raise PodcastNotFoundError(error % podcast)
 
     def clean(self, **kwargs):
         '''

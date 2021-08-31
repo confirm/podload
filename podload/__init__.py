@@ -4,7 +4,9 @@ Podload module.
 
 import argparse
 import logging
+import sys
 
+from .exceptions import *
 from .manager import *
 from .podcast import *
 
@@ -34,7 +36,7 @@ def main():
     retention_kwargs = {'type': int, 'help': 'an alternative retention in days'}
 
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug mode')
-    parser.add_argument('directory', default='.', nargs='?', help='the podcasts directory path')
+    parser.add_argument('-b', '--basedir', default='.', help='the base directory path')
 
     subparsers = parser.add_subparsers(dest='action', required=True)
 
@@ -62,25 +64,26 @@ def main():
         level=logging.DEBUG if args.debug else logging.INFO,
     )
 
-    manager = Manager(args.directory)
+    try:
+        manager = Manager(args.basedir)
 
-    if args.action == 'info':
-        for podcast in manager.podcasts:
-            print(f'\n{podcast} ({podcast.metadata.get("retention")} days retention):')
-            for file, title in podcast.info:
-                print(f'    {file}  {title}')
+        if args.action == 'info':
+            print(manager.info)
 
-    elif args.action == 'clean':
-        manager.clean(retention=args.retention)
+        elif args.action == 'clean':
+            manager.clean(retention=args.retention)
 
-    elif args.action == 'add':
-        manager.add_podcast(url=args.url, retention=args.retention)
+        elif args.action == 'add':
+            manager.add_podcast(url=args.url, retention=args.retention)
 
-    elif args.action == 'download':
-        manager.download(retention=args.retention, verify=args.verify)
+        elif args.action == 'download':
+            manager.download(retention=args.retention, verify=args.verify)
 
-    elif args.action == 'set-retention':
-        manager.set_retention(podcast=args.podcast, retention=args.retention)
+        elif args.action == 'set-retention':
+            manager.set_retention(podcast=args.podcast, retention=args.retention)
+
+    except PodloadError:
+        sys.exit(1)
 
 
 if __name__ == '__main__':

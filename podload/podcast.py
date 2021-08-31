@@ -1,5 +1,5 @@
 '''
-Podcast module.
+Podload podcast module.
 '''
 
 __all__ = (
@@ -17,6 +17,8 @@ import urllib.request
 
 import feedparser
 import pytz
+
+from . import exceptions
 
 #: The logger instance.
 LOGGER   = logging.getLogger(__name__)
@@ -56,10 +58,18 @@ class Podcast:
 
         :return: The podcast instance
         :rtype: Podcast
-        '''
-        LOGGER.info('Creating new podcast from "%s"', url)
 
-        title         = feedparser.parse(url).feed.title
+        :raises podload.exceptions.ParserError: When there was a parsing error
+        '''
+        LOGGER.info('Creating new podcast from %r', url)
+
+        try:
+            title = feedparser.parse(url).feed.title
+        except AttributeError as ex:
+            error = 'Could not parse title of podcast'
+            LOGGER.error(error)
+            raise exceptions.ParserError(error) from ex
+
         podcast_dir   = os.path.join(podcasts_dir, title)
         metadata_file = os.path.join(podcast_dir, cls.metadata_filename)
 
@@ -67,7 +77,7 @@ class Podcast:
             os.makedirs(podcast_dir)
 
         if os.path.exists(metadata_file):
-            LOGGER.error('Podcast metadata file "%s" is already existing', metadata_file)
+            LOGGER.warning('Podcast metadata file %r is already existing', metadata_file)
         else:
             with open(metadata_file, 'w', encoding='utf-8') as file:
                 json.dump({
@@ -82,7 +92,7 @@ class Podcast:
         '''
         Constructor.
         '''
-        LOGGER.debug('Initialising podcast at "%s"', podcast_dir)
+        LOGGER.debug('Initialising podcast at %r', podcast_dir)
 
         self.podcast_dir      = podcast_dir
         self.metadata_file    = os.path.join(podcast_dir, self.metadata_filename)
@@ -90,7 +100,6 @@ class Podcast:
         self.current_download = None
 
         self.load_metadata()
-        self.clean_metadata()
 
     def __str__(self):
         '''
@@ -120,13 +129,13 @@ class Podcast:
         '''
         for file in os.listdir(self.podcast_dir):
             if not file.startswith('.'):
-                yield file, self.metadata.get('episodes', {}).get(file, '')
+                yield os.path.splitext(file)[0]
 
     def load_metadata(self):
         '''
         Load the metadata from disk.
         '''
-        LOGGER.debug('Loading metadata from "%s"', self.metadata_file)
+        LOGGER.debug('Loading metadata from %r', self.metadata_file)
 
         with open(self.metadata_file, 'r', encoding='utf-8') as file_handle:
             self.metadata = json.load(file_handle)
@@ -135,29 +144,10 @@ class Podcast:
         '''
         Save the metadata to disk.
         '''
-        LOGGER.debug('Saving metadata to "%s"', self.metadata_file)
+        LOGGER.debug('Saving metadata to %r', self.metadata_file)
 
         with open(self.metadata_file, 'w', encoding='utf-8') as file_handle:
             json.dump(self.metadata, file_handle)
-
-    def clean_metadata(self):
-        '''
-        Clean the metadata.
-        '''
-        if 'episodes' not in self.metadata:
-            return
-
-        episodes = self.metadata['episodes']
-        delete   = []
-
-        for episode in episodes:
-            if not os.path.exists(os.path.join(self.podcast_dir, episode)):
-                delete.append(episode)
-
-        for item in delete:
-            del episodes[item]
-
-        self.save_metadata()
 
     def clean(self, retention=None):
         '''
@@ -170,17 +160,15 @@ class Podcast:
         threshold = datetime.datetime.now() - datetime.timedelta(days=retention)
 
         for file in os.listdir(self.podcast_dir):
-            drive = os.path.splitext(file)[0]
-            if re.match(r'\d{4}(-\d{2}){2} \d{2}:\d{2}', drive):
-                if datetime.datetime.strptime(drive, '%Y-%m-%d %H:%M') < threshold:
-                    LOGGER.info('Deleting "%s"', file)
+            match = re.search(r'\d{4}(-\d{2}){2} \d{2}:\d{2}', file)
+            if match:
+                if datetime.datetime.strptime(match.group(0), '%Y-%m-%d %H:%M') < threshold:
+                    LOGGER.info('Deleting %r', file)
                     os.remove(os.path.join(self.podcast_dir, file))
                 else:
-                    LOGGER.debug('Not deleteing "%s" because it\'s within the retention', file)
+                    LOGGER.debug('Not deleteing %r because it\'s within the retention', file)
             else:
-                LOGGER.debug('Ignoring "%s" because filename doesn\'t match', file)
-
-        self.clean_metadata()
+                LOGGER.debug('Ignoring %r because filename doesn\'t match', file)
 
     def set_retention(self, retention):
         '''
@@ -188,7 +176,7 @@ class Podcast:
 
         :param int retention: The retention in days
         '''
-        LOGGER.info('Setting retention of "%s" to %d days', self, retention)
+        LOGGER.info('Setting retention of %r to %d days', self, retention)
         self.metadata['retention'] = retention
         self.save_metadata()
 
@@ -201,7 +189,7 @@ class Podcast:
         '''
         url = self.metadata['url']
 
-        LOGGER.info('Parsing podcasts at "%s"', url)
+        LOGGER.info('Parsing podcasts at %r', url)
 
         feed = feedparser.parse(url)
 
@@ -219,7 +207,6 @@ class Podcast:
         :param bool verify: Verify the file size and redownload if missmatch
         '''
         retention       = retention or self.metadata.get('retention', DEFAULT_RETENTION)
-        episodes        = self.metadata.setdefault('episodes', {})
         threshold_naive = datetime.datetime.now() - datetime.timedelta(days=retention)
         threshold_aware = datetime.datetime.now(tz=TIMEZONE) - datetime.timedelta(days=retention)
         feed            = self.parse()
@@ -231,36 +218,34 @@ class Podcast:
             threshold = threshold_naive if published.tzinfo is None else threshold_aware
 
             if published < threshold:
-                LOGGER.debug('Ignoring "%s" because it\'s older than %d days', title, retention)
+                LOGGER.debug('Ignoring %r because it\'s older than %d days', title, retention)
                 continue
 
             if not links:
-                LOGGER.debug('Ignoring "%s" because no acceptable link types found', title)
+                LOGGER.debug('Ignoring %r because no acceptable link types found', title)
                 continue
 
             link      = links[0].href
             suffix    = os.path.splitext(urllib.parse.urlparse(link).path)[1]
             date_str  = published.strftime('%Y-%m-%d %H:%M')
-            file_name = f'{date_str}{suffix}'
+            file_name = f'{date_str} - {title}{suffix}'
             file_path = os.path.join(self.podcast_dir, file_name)
             exists    = os.path.exists(file_path)
 
             if not verify and exists:
-                LOGGER.debug('Ignoring "%s" because it\'s already existing', title)
+                LOGGER.debug('Ignoring %r because it\'s already existing', title)
                 continue
 
             with urllib.request.urlopen(link) as response:
                 if exists and int(response.headers['content-length']) == os.stat(file_path).st_size:
                     LOGGER.debug(
-                        'Ignoring "%s" because it\'s already existing and filesize matches', title)
+                        'Ignoring %r because it\'s already existing and filesize matches', title)
                     continue
                 if exists:
-                    LOGGER.warning('Redownloading "%s" as the file size missmatches', title)
+                    LOGGER.warning('Redownloading %r as the file size missmatches', title)
                 else:
-                    LOGGER.info('Downloading podcast episode "%s" to "%s"', title, file_path)
+                    LOGGER.info('Downloading podcast episode %r', title)
+                    LOGGER.debug('Podcast filename is %r', file_path)
 
                 with open(file_path, 'wb', encoding='utf-8') as file:
                     file.write(response.read())
-
-                episodes[file_name] = title
-                self.save_metadata()
