@@ -69,7 +69,7 @@ class Podcast:
         if os.path.exists(metadata_file):
             LOGGER.error('Podcast metadata file "%s" is already existing', metadata_file)
         else:
-            with open(metadata_file, 'w') as file:
+            with open(metadata_file, 'w', encoding='utf-8') as file:
                 json.dump({
                     'url': url,
                     'title': title,
@@ -128,7 +128,7 @@ class Podcast:
         '''
         LOGGER.debug('Loading metadata from "%s"', self.metadata_file)
 
-        with open(self.metadata_file, 'r') as file_handle:
+        with open(self.metadata_file, 'r', encoding='utf-8') as file_handle:
             self.metadata = json.load(file_handle)
 
     def save_metadata(self):
@@ -137,7 +137,7 @@ class Podcast:
         '''
         LOGGER.debug('Saving metadata to "%s"', self.metadata_file)
 
-        with open(self.metadata_file, 'w') as file_handle:
+        with open(self.metadata_file, 'w', encoding='utf-8') as file_handle:
             json.dump(self.metadata, file_handle)
 
     def clean_metadata(self):
@@ -259,7 +259,7 @@ class Podcast:
                 else:
                     LOGGER.info('Downloading podcast episode "%s" to "%s"', title, file_path)
 
-                with open(file_path, 'wb') as file:
+                with open(file_path, 'wb', encoding='utf-8') as file:
                     file.write(response.read())
 
                 episodes[file_name] = title
