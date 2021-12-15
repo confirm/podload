@@ -69,7 +69,7 @@ class Manager:
         '''
         Add a new podcast.
 
-        :param dict kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.create()`
+        :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.create()`
         '''
         self.podcasts.append(Podcast.create(podcasts_dir=self.podcasts_dir, **kwargs))
 
@@ -78,7 +78,7 @@ class Manager:
         Delegate a method to all podcasts.
 
         :param str method: The name of the method :class:`podload.podcast.Podcast`
-        :param dict kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
+        :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
         '''
         for podcast in self.podcasts:
             getattr(podcast, method)(**kwargs)
@@ -105,7 +105,7 @@ class Manager:
         '''
         Download all episodes.
 
-        :param dict kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
+        :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
         '''
         self.delegate('clean', **kwargs)
 
@@ -113,6 +113,6 @@ class Manager:
         '''
         Download all episodes.
 
-        :param dict kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
+        :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
         '''
         self.delegate('download', **kwargs)
