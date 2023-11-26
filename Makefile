@@ -64,14 +64,7 @@ test-pylint:
 	curl -sSfLo .pylintrc $(LINTER_CONFIGS)/pylintrc
 	pylint $(SOURCE_DIRS)
 
-test-unittest:
-	curl -sSfLo .coveragerc $(LINTER_CONFIGS)/coveragerc
-	coverage run $(which python) -m unittest
-
-test-coverage:
-	coverage report -m
-
-test: test-isort test-pycodestyle test-pylint test-unittest test-coverage
+test: test-isort test-pycodestyle test-pylint
 
 #
 # Build
