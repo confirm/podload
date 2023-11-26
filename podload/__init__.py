@@ -4,6 +4,7 @@ Podload module.
 
 import argparse
 import logging
+import pathlib
 import sys
 
 from .exceptions import *
@@ -36,7 +37,7 @@ def main():
     retention_kwargs = {'type': int, 'help': 'an alternative retention in days'}
 
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug mode')
-    parser.add_argument('-b', '--basedir', default='.', help='the base directory path')
+    parser.add_argument('-b', '--basedir', default='.', type=pathlib.Path, help='base directory')
 
     subparsers = parser.add_subparsers(dest='action', required=True)
 
@@ -54,8 +55,8 @@ def main():
     download.add_argument('-v', '--verify', action='store_true', help='verify the file size')
 
     retention = subparsers.add_parser(name='set-retention', help='set a new retention')
-    retention.add_argument('podcast', help='the podcast title')
-    retention.add_argument('retention', type=int, help='the new retention in days')
+    retention.add_argument('podcast', help='podcast title')
+    retention.add_argument('retention', type=int, help='new retention in days')
 
     args = parser.parse_args()
 

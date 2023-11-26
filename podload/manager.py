@@ -7,7 +7,6 @@ __all__ = (
 )
 
 import logging
-import os
 
 from .exceptions import PodcastNotFoundError
 from .podcast import Podcast
@@ -19,7 +18,7 @@ class Manager:
     '''
     The podcast manager.
 
-    :param str podcasts_dir: The podcast directory
+    :param pathlib.Path podcasts_dir: The podcast directory
     '''
 
     def __init__(self, podcasts_dir):
@@ -55,15 +54,17 @@ class Manager:
         '''
         LOGGER.info('Loading podcasts from %s', self.podcasts_dir)
 
-        if not os.path.exists(self.podcasts_dir):
+        if not self.podcasts_dir.exists():
             LOGGER.warning('Directory %s is missing, not loading podcasts', self.podcasts_dir)
             return
 
-        for root, dirs, files in os.walk(self.podcasts_dir):  # pylint: disable=unused-variable
+        for root, dirs, files in self.podcasts_dir.walk():  # pylint: disable=unused-variable
             for file in files:
                 if file != Podcast.metadata_filename:
                     continue
-                self.podcasts.append(Podcast(os.path.join(root)))
+                podcast = Podcast(root)
+                LOGGER.info('Found %r podcast at %r', str(podcast), str(root))
+                self.podcasts.append(podcast)
 
     def add_podcast(self, **kwargs):
         '''

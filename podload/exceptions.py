@@ -9,9 +9,9 @@ class PodloadError(Exception):
     '''
 
 
-class ParserError(PodloadError):
+class FeedError(PodloadError):
     '''
-    Exception which is thrown when a parsing error occurs.
+    Exception which is thrown when a feed or parsing error occurs.
     '''
 
 
