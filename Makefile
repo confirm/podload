@@ -64,7 +64,10 @@ test-pylint:
 	curl -sSfLo .pylintrc $(LINTER_CONFIGS)/pylintrc
 	pylint $(SOURCE_DIRS)
 
-test: test-isort test-pycodestyle test-pylint
+test-packages:
+	pip-audit
+
+test: test-isort test-pycodestyle test-pylint test-packages
 
 #
 # Build
