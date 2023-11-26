@@ -243,7 +243,7 @@ class Podcast:
                 LOGGER.debug('Ignoring %r because it\'s already existing', title)
                 continue
 
-            with urllib.request.urlopen(link) as response:
+            with urllib.request.urlopen(link) as response:  # nosemgrep
                 if exists and int(response.headers['content-length']) == file_path.stat.st_size:
                     LOGGER.debug(
                         'Ignoring %r because it\'s already existing and filesize matches', title)

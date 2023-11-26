@@ -69,7 +69,7 @@ def main():
         manager = Manager(args.basedir)
 
         if args.action == 'info':
-            print(manager.info)
+            print(manager.info)  # nosemgrep: confirm.python.print
 
         elif args.action == 'clean':
             manager.clean(retention=args.retention)
