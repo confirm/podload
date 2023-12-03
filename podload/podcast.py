@@ -177,19 +177,22 @@ class Podcast:
         :param retention: An alternative retention in days
         :type retention: None or int
         '''
+        LOGGER.info('Cleaning episodes of %r', self.metadata['title'])
+
         retention = retention or self.metadata.get('retention', DEFAULT_RETENTION)
         threshold = datetime.datetime.now() - datetime.timedelta(days=retention)
 
         for file in self.podcast_dir.iterdir():
-            match = re.search(r'\d{4}(-\d{2}){2} \d{2}:\d{2}', file)
+            name  = file.name
+            match = re.search(r'\d{4}(-\d{2}){2} \d{2}:\d{2}', name)
             if match:
                 if datetime.datetime.strptime(match.group(0), '%Y-%m-%d %H:%M') < threshold:
-                    LOGGER.info('Deleting %r', file)
-                    (self.podcast_dir / file).unlink()
+                    LOGGER.info('Deleting %r', name)
+                    file.unlink()
                 else:
-                    LOGGER.debug('Not deleteing %r because it\'s within the retention', file)
+                    LOGGER.debug('Not deleteing %r because it\'s within the retention', name)
             else:
-                LOGGER.debug('Ignoring %r because filename doesn\'t match', file)
+                LOGGER.debug('Ignoring %r because filename doesn\'t match', name)
 
     def set_retention(self, retention):
         '''
