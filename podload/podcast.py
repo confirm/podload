@@ -200,7 +200,7 @@ class Podcast:
 
         :param int retention: The retention in days
         '''
-        LOGGER.info('Setting retention of %r to %d days', self, retention)
+        LOGGER.info('Setting retention of %r to %d days', self.metadata['title'], retention)
         self.metadata['retention'] = retention
         self.save_metadata()
 
