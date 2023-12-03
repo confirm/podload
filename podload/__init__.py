@@ -33,8 +33,11 @@ def main():
         formatter_class=help_formatter
     )
 
-    retention_args = '-r', '--retention'
+    retention_args   = '-r', '--retention'
     retention_kwargs = {'type': int, 'help': 'an alternative retention in days'}
+
+    verify_args   = '-v', '--verify'
+    verify_kwargs = {'action': 'store_true', 'help': 'verify the file size'}
 
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug mode')
     parser.add_argument('-b', '--basedir', default='.', type=pathlib.Path, help='base directory')
@@ -52,7 +55,11 @@ def main():
 
     download = subparsers.add_parser(name='download', help='download the latest episodes')
     download.add_argument(*retention_args, **retention_kwargs)
-    download.add_argument('-v', '--verify', action='store_true', help='verify the file size')
+    download.add_argument(*verify_args, **verify_kwargs)
+
+    update = subparsers.add_parser(name='update', help='shortcut for download, followed by clean')
+    update.add_argument(*retention_args, **retention_kwargs)
+    update.add_argument(*verify_args, **verify_kwargs)
 
     retention = subparsers.add_parser(name='set-retention', help='set a new retention')
     retention.add_argument('podcast', help='podcast title')
@@ -79,6 +86,9 @@ def main():
 
         elif args.action == 'download':
             manager.download(retention=args.retention, verify=args.verify)
+
+        elif args.action == 'update':
+            manager.update(retention=args.retention, verify=args.verify)
 
         elif args.action == 'set-retention':
             manager.set_retention(podcast=args.podcast, retention=args.retention)

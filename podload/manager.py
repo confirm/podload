@@ -79,7 +79,7 @@ class Manager:
         Delegate a method to all podcasts.
 
         :param str method: The name of the method :class:`podload.podcast.Podcast`
-        :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
+        :param dict \\**kwargs: The kwargs to pass to the method
         '''
         for podcast in self.podcasts:
             getattr(podcast, method)(**kwargs)
@@ -104,16 +104,24 @@ class Manager:
 
     def clean(self, **kwargs):
         '''
-        Download all episodes.
+        Cleanup old episodes.
 
-        :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
+        :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.clean()`
         '''
         self.delegate('clean', **kwargs)
 
     def download(self, **kwargs):
         '''
-        Download all episodes.
+        Download all new episodes.
 
         :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.download()`
         '''
         self.delegate('download', **kwargs)
+
+    def update(self, **kwargs):
+        '''
+        Download all new episodes, then cleanup old episodes.
+
+        :param dict \\**kwargs: The kwargs to pass to :meth:`podload.podcast.Podcast.update()`
+        '''
+        self.delegate('update', **kwargs)

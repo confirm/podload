@@ -212,7 +212,7 @@ class Podcast:
         :type retention: None or int
         :param bool verify: Verify the file size and redownload if missmatch
         '''
-        LOGGER.info('Updating podcast %r', self.metadata['title'])
+        LOGGER.info('Downloading episodes of %r', self.metadata['title'])
 
         retention       = retention or self.metadata.get('retention', DEFAULT_RETENTION)
         threshold_naive = datetime.datetime.now() - datetime.timedelta(days=retention)
@@ -259,3 +259,14 @@ class Podcast:
 
                 with file_path.open(mode='wb') as file:
                     file.write(response.read())
+
+    def update(self, retention=None, verify=False):
+        '''
+        Wrapper for running :meth:`download`, then :meth:`clean`.
+
+        :param retention: An alternative retention in days
+        :type retention: None or int
+        :param bool verify: Verify the file size and redownload if missmatch
+        '''
+        self.download(retention=retention, verify=verify)
+        self.clean(retention=retention)

@@ -33,22 +33,23 @@ Usage
 The usage of ``podload`` is quite simple:
 
 ```
-usage: podload [-h] [-d] [-b BASEDIR] {info,clean,add,download,set-retention} ...
+usage: podload [-h] [-d] [-b BASEDIR] {info,clean,add,download,update,set-retention} ...
 
 The simple podcast loader.
 
 positional arguments:
-  {info,clean,add,download,set-retention}
+  {info,clean,add,download,update,set-retention}
     info                                display the podcast infos
     clean                               clean old episodes
     add                                 add a new podcast
     download                            download the latest episodes
+    update                              shortcut for download, followed by clean
     set-retention                       set a new retention
 
-optional arguments:
+options:
   -h, --help                            show this help message and exit
   -d, --debug                           enable debug mode
-  -b BASEDIR, --basedir BASEDIR         the base directory path
+  -b BASEDIR, --basedir BASEDIR         base directory
 ```
 
 For example, to add the "Wired UK" Podcast to `/Volumes/XTRAINERZ` you can run this:
@@ -70,6 +71,12 @@ To **clean up old episodes**, run this:
 
 ```bash
 podload /Volumes/XTRAINERZ clean
+```
+
+To **download and clean up**, run this:
+
+```bash
+podload /Volumes/XTRAINERZ update
 ```
 
 To display all the infos run this:
